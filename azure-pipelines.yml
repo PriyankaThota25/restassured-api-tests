@@ -9,6 +9,12 @@ pr:
 pool:
   vmImage: ubuntu-latest
 
+parameters:
+  - name: tags
+    displayName: 'JUnit tag expression (empty = all). Tags: smoke, regression, negative, auth'
+    type: string
+    default: ' '
+
 variables:
   - name: baseUri
     value: https://jsonplaceholder.typicode.com
@@ -23,7 +29,7 @@ steps:
     inputs:
       mavenPomFile: pom.xml
       goals: clean test
-      options: -B -Dbase.uri=$(baseUri) -Dauth.token.url=$(authTokenUrl)
+      options: -B -Dbase.uri=$(baseUri) -Dauth.token.url=$(authTokenUrl) -Dgroups="${{ trim(parameters.tags) }}"
       javaHomeOption: JDKVersion
       jdkVersionOption: '1.21'
       publishJUnitResults: true
