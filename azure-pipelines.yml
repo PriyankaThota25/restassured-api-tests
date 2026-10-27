@@ -1,0 +1,40 @@
+trigger:
+  branches:
+    include: [main]
+
+pr:
+  branches:
+    include: [main]
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - name: baseUri
+    value: https://jsonplaceholder.typicode.com
+  - name: authTokenUrl
+    value: https://auth.example.com/oauth/token
+  # Holds AUTH_CLIENT_ID and AUTH_CLIENT_SECRET (secret)
+  - group: api-test-secrets
+
+steps:
+  - task: Maven@4
+    displayName: Run API tests
+    inputs:
+      mavenPomFile: pom.xml
+      goals: clean test
+      options: -B -Dbase.uri=$(baseUri) -Dauth.token.url=$(authTokenUrl)
+      javaHomeOption: JDKVersion
+      jdkVersionOption: '1.21'
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    env:
+      AUTH_CLIENT_ID: $(AUTH_CLIENT_ID)
+      AUTH_CLIENT_SECRET: $(AUTH_CLIENT_SECRET)   # secrets must be mapped explicitly
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish HTML report
+    condition: succeededOrFailed()
+    inputs:
+      targetPath: target/custom-report
+      artifact: api-test-report
