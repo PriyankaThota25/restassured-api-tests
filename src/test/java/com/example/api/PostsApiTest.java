@@ -1,5 +1,6 @@
 package com.example.api;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -13,6 +14,7 @@ import static org.hamcrest.Matchers.notNullValue;
 class PostsApiTest extends BaseApiTest {
 
     @Test
+    @Tag("smoke") @Tag("regression")
     void getPost_returnsExpectedFields() {
         given().spec(spec)
         .when()
@@ -25,6 +27,7 @@ class PostsApiTest extends BaseApiTest {
     }
 
     @Test
+    @Tag("smoke") @Tag("regression")
     void listPosts_returnsCollection() {
         given().spec(spec)
         .when()
@@ -35,6 +38,7 @@ class PostsApiTest extends BaseApiTest {
     }
 
     @Test
+    @Tag("regression")
     void listPostsByUser_filtersWithQueryParam() {
         given().spec(spec).queryParam("userId", 1)
         .when()
@@ -45,6 +49,7 @@ class PostsApiTest extends BaseApiTest {
     }
 
     @Test
+    @Tag("regression")
     void createPost_returns201WithEchoedBody() {
         Map<String, Object> payload = Map.of(
                 "title", "foo",
@@ -61,6 +66,7 @@ class PostsApiTest extends BaseApiTest {
     }
 
     @Test
+    @Tag("negative") @Tag("regression")
     void getUnknownPost_returns404() {
         given().spec(spec)
         .when()

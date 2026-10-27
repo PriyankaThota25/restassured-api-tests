@@ -28,7 +28,7 @@ public class HtmlReportListener implements TestExecutionListener {
     private static final int MAX_BODY_CHARS = 3000;
 
     private record Result(String className, String name, String status, long millis,
-                          String error, List<ApiCallRecorder.Call> calls) {
+                          String error, List<String> tags, List<ApiCallRecorder.Call> calls) {
     }
 
     private final Map<String, Long> startTimes = new ConcurrentHashMap<>();
@@ -51,7 +51,7 @@ public class HtmlReportListener implements TestExecutionListener {
     @Override
     public void executionSkipped(TestIdentifier id, String reason) {
         if (id.isTest()) {
-            results.add(new Result(className(id), id.getDisplayName(), "SKIPPED", 0, reason, List.of()));
+            results.add(new Result(className(id), id.getDisplayName(), "SKIPPED", 0, reason, tags(id), List.of()));
         }
     }
 
@@ -68,7 +68,7 @@ public class HtmlReportListener implements TestExecutionListener {
             case ABORTED -> "SKIPPED";
         };
         String error = result.getThrowable().map(HtmlReportListener::stackTrace).orElse("");
-        results.add(new Result(className(id), id.getDisplayName(), status, millis, error,
+        results.add(new Result(className(id), id.getDisplayName(), status, millis, error, tags(id),
                 ApiCallRecorder.callsFor(id.getUniqueId())));
     }
 
@@ -121,8 +121,9 @@ public class HtmlReportListener implements TestExecutionListener {
         h.append("<details class=\"test ").append(r.status().toLowerCase()).append("\"")
                 .append(r.status().equals("FAILED") ? " open" : "").append("><summary>")
                 .append("<span class=\"badge\">").append(r.status()).append("</span>")
-                .append("<span class=\"name\">").append(esc(r.name())).append("</span>")
-                .append("<span class=\"time\">").append(r.millis()).append(" ms</span></summary>");
+                .append("<span class=\"name\">").append(esc(r.name())).append("</span>");
+        r.tags().forEach(t -> h.append("<span class=\"tag\">").append(esc(t)).append("</span>"));
+        h.append("<span class=\"time\">").append(r.millis()).append(" ms</span></summary>");
         if (!r.error().isEmpty()) {
             h.append("<pre class=\"error\">").append(esc(r.error())).append("</pre>");
         }
@@ -139,6 +140,10 @@ public class HtmlReportListener implements TestExecutionListener {
             h.append("<p class=\"none\">No HTTP calls recorded for this test.</p>");
         }
         return h.append("</details>").toString();
+    }
+
+    private static List<String> tags(TestIdentifier id) {
+        return id.getTags().stream().map(t -> t.getName()).sorted().toList();
     }
 
     private static String className(TestIdentifier id) {
@@ -175,6 +180,7 @@ public class HtmlReportListener implements TestExecutionListener {
             .test.passed{border-left-color:var(--pass)}.test.failed{border-left-color:var(--fail)}.test.skipped{border-left-color:var(--skip)}
             summary{cursor:pointer;display:flex;gap:12px;align-items:center;padding:10px 0}.name{flex:1;word-break:break-word}
             .badge{font-size:11px;font-weight:700;letter-spacing:.04em;min-width:64px}.passed .badge{color:var(--pass)}.failed .badge{color:var(--fail)}.skipped .badge{color:var(--skip)}
+            .tag{font-size:11px;padding:1px 8px;border-radius:10px;border:1px solid var(--line);color:var(--muted)}
             .time{color:var(--muted);font-size:13px;white-space:nowrap}
             .call{border-top:1px solid var(--line);padding:10px 0}.req{word-break:break-all}.label{font-size:12px;color:var(--muted);margin-top:8px}
             .http{font-weight:700;padding:0 6px;border-radius:4px;border:1px solid var(--line)}.http.s2xx{color:var(--pass)}.http.s4xx,.http.s5xx{color:var(--fail)}

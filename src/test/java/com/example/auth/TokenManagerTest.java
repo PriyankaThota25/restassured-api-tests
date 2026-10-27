@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -21,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /** Runs against an in-process fake auth server + protected API, so no real credentials needed. */
+@Tag("auth")
+@Tag("regression")
 class TokenManagerTest {
 
     private HttpServer server;
