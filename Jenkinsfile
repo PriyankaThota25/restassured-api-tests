@@ -27,13 +27,13 @@ pipeline {
 
     post {
         always {
-            junit 'target/surefire-reports/*.xml'
+            junit testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true
             // Needs the "HTML Publisher" plugin. Jenkins' default Content-Security-Policy blocks the
             // report's inline CSS, so it shows unstyled until you relax it (Manage Jenkins > Script
             // Console): System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "default-src 'self'; style-src 'self' 'unsafe-inline';")
             publishHTML(target: [reportDir: 'target/custom-report', reportFiles: 'index.html',
                                  reportName: 'API Test Report', keepAll: true,
-                                 alwaysLinkToLastBuild: true, allowMissing: false])
+                                 alwaysLinkToLastBuild: true, allowMissing: true])
         }
     }
 }
